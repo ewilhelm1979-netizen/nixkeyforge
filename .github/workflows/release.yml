@@ -1,0 +1,53 @@
+name: Reproducible release candidate
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  artifact:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
+
+      - name: Run release gates
+        run: |
+          nix develop --command cargo test --workspace --all-features
+          nix flake check --print-build-logs
+
+      - name: Generate CycloneDX SBOM
+        run: nix develop --command cargo cyclonedx --format json --all
+
+      - name: Build pinned package
+        run: nix build .#nixkeyforge
+
+      - name: Assemble deterministic archive
+        run: |
+          mkdir -p release/nixkeyforge/bin release/nixkeyforge/sbom
+          cp -a result/bin/nixkeyforge release/nixkeyforge/bin/
+          find crates -name '*.cdx.json' -exec cp -a '{}' release/nixkeyforge/sbom/ ';'
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner \
+            -C release -czf nixkeyforge-x86_64-linux.tar.gz nixkeyforge
+          sha256sum nixkeyforge-x86_64-linux.tar.gz > nixkeyforge-x86_64-linux.tar.gz.sha256
+
+      - name: Upload release candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nixkeyforge-x86_64-linux
+          path: |
+            nixkeyforge-x86_64-linux.tar.gz
+            nixkeyforge-x86_64-linux.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
+
+      - name: Check Rust formatting
+        run: nix develop --command cargo fmt --all --check
+
+      - name: Lint all Rust targets
+        run: nix develop --command cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Test the complete workspace
+        run: nix develop --command cargo test --workspace --all-features
+
+      - name: Check RustSec advisories
+        run: nix develop --command cargo audit
+
+      - name: Check dependency policy
+        run: nix develop --command cargo deny check
+
+      - name: Check flake outputs and NixOS VM
+        run: nix flake check --print-build-logs
+
+      - name: Check whitespace
+        run: git diff --check

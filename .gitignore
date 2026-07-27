@@ -1,0 +1,9 @@
+/target
+/result
+/.direnv
+/.envrc.local
+*.age
+*.header
+*.recovery-key
+*.plan.json
+*.backup.tar
