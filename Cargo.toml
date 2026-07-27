@@ -1,0 +1,38 @@
+[workspace]
+members = [
+  "crates/nixkeyforge-core",
+  "crates/nixkeyforge-system",
+  "crates/nixkeyforge-cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-only"
+repository = "https://github.com/ewilhelm1979-netizen/nixkeyforge"
+authors = ["NixKeyforge contributors"]
+
+[workspace.dependencies]
+clap = { version = "4.5.42", features = ["derive"] }
+hex = "0.4.3"
+nixkeyforge-core = { version = "0.1.0", path = "crates/nixkeyforge-core" }
+nixkeyforge-system = { version = "0.1.0", path = "crates/nixkeyforge-system" }
+proptest = "1.7.0"
+rustix = { version = "1.1.4", features = ["fs"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.142"
+sha2 = "0.10.9"
+tempfile = "3.20.0"
+thiserror = "2.0.12"
+zeroize = "1.8.1"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
