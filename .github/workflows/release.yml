@@ -24,6 +24,7 @@ jobs:
 
       - name: Run release gates
         run: |
+          nix develop --command just secrets
           nix develop --command cargo test --workspace --all-features
           nix flake check --print-build-logs
 

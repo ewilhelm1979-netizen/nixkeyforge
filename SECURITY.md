@@ -95,6 +95,35 @@ Never publish live credentials or a decryptable LUKS2 header. A header can
 support offline password guessing and is sensitive even without the data
 device.
 
+## Secret Hygiene
+
+Never put passwords, tokens, private keys, Age identities, recovery keys,
+credentialed connection strings, real U2F mappings, FIDO2 credential IDs,
+LUKS token dumps, or other secrets in source, fixtures, generated plans, logs,
+status output, or Nix expressions. Real secrets must never be Nix strings
+because evaluation can copy them into the world-readable Nix store. An
+`.env.example` file may use unambiguous placeholders such as
+`API_KEY = "YOUR_API_KEY_HERE"`; examples must never be usable credentials.
+
+Run `nix develop --command just secrets` for the current tree and
+`nix develop --command just secrets-history` for the slower, complete local
+Git-history audit. The history command is a manual or periodic maintenance
+task. Both commands redact findings. `just check` includes the current-tree
+scan, and CI blocks new findings before quality or release artifacts proceed.
+
+If a likely real secret is reported, stop committing and sharing the affected
+repository. Revoke or rotate the credential first, inspect relevant access and
+audit logs, assess impact, and only then coordinate any separate history
+cleanup. Never rewrite shared history automatically. `.gitignore` reduces
+accidental additions but is not a security control and does not protect
+already tracked files.
+
+Fixtures must be synthetic, redacted, and clearly unusable in production.
+Generated plans and backups belong outside the repository or in the ignored
+`plans/`, `generated/`, or `backups/` directories. Optional pre-commit
+integration may invoke `nix develop --command just secrets`; installation is
+manual and CI remains mandatory.
+
 ## Disclosure and credit
 
 We prefer coordinated disclosure. Once a fix and migration guidance are ready,

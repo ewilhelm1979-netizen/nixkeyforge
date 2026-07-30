@@ -27,6 +27,9 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
 
+      - name: Scan the source tree for secrets
+        run: nix develop --command just secrets
+
       - name: Check Rust formatting
         run: nix develop --command cargo fmt --all --check
 

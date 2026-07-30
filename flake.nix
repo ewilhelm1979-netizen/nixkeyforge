@@ -46,6 +46,7 @@
 
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
+          actionlint
           age
           cargo
           cargo-audit
@@ -53,12 +54,16 @@
           cargo-deny
           clippy
           cryptsetup
+          gitleaks
+          just
+          jq
           libfido2
           nixfmt
           openssh
           pam_u2f
           rustc
           rustfmt
+          shellcheck
           systemd
         ];
 
